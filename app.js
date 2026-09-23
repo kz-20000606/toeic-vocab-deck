@@ -18,7 +18,8 @@ function pick(pool,n,mode,start=0){
   return chosen.slice(0,n).map(w=>w.id);
 }
 async function begin(review=false,block=0){
-  const pool=review?words.filter(w=>['unknown','unsure'].includes(status(w.id))):words.filter(w=>w.level===level).slice(block*10,(block+1)*10);
+  const levelWords=words.filter(w=>w.level===level);
+  const pool=review?words.filter(w=>['unknown','unsure'].includes(status(w.id))):orderMode==='random'?levelWords:levelWords.slice(block*10,(block+1)*10);
   if(!pool.length){notice='復習する単語がまだありません。';render();return}
   session={ids:pick(pool,10,orderMode),index:0,review,direction,order:orderMode,shown:false,hinted:false,assessed:null,results:[]};
   await saveSession();setView('practice');
@@ -65,12 +66,13 @@ function renderHome(){
     <section class="panel"><h2 class="sectiontitle">LEVEL ${level} を学習</h2><p class="muted">答えを思い浮かべて、自分で理解度を選びます。</p>
     <div class="eyebrow">出題方向</div><div class="options"><button class="option ${direction==='ja-en'?'selected':''}" data-direction="ja-en">日本語 → 英語</button><button class="option ${direction==='en-ja'?'selected':''}" data-direction="en-ja">英語 → 日本語</button></div>
     <div class="eyebrow">出題順</div><div class="options"><button class="option ${orderMode==='sequential'?'selected':''}" data-order="sequential">順番に</button><button class="option ${orderMode==='random'?'selected':''}" data-order="random">ランダム</button></div>
-    <div class="eyebrow">練習する範囲（各10語）</div><div class="options block-options">${Array.from({length:5},(_,i)=>{const set=words.filter(w=>w.level===level).slice(i*10,(i+1)*10);const done=set.filter(w=>status(w.id)!=='new').length;return `<button class="option block" data-block="${i}">${i*10+1}〜${(i+1)*10}語<small>${done} / 10語を学習済み</small></button>`}).join('')}</div>
+    ${orderMode==='random'?'<div class="eyebrow">50語から出題</div><div class="options"><button class="primary" id="random-start">ランダムに10語を始める</button></div>':`<div class="eyebrow">練習する範囲（各10語）</div><div class="options block-options">${Array.from({length:5},(_,i)=>{const set=words.filter(w=>w.level===level).slice(i*10,(i+1)*10);const done=set.filter(w=>status(w.id)!=='new').length;return `<button class="option block" data-block="${i}">${i*10+1}〜${(i+1)*10}語<small>${done} / 10語を学習済み</small></button>`}).join('')}</div>`}
     <div class="actions"><button class="secondary" id="review" ${weak?'':'disabled'}>苦手語を復習 ${weak?`(${weak})`:''}</button></div>
-    <p class="note">範囲のボタンを押すと練習が始まります。「ランダム」は選んだ10語の中で順序を変えます。</p></section>${notice?`<p class="toast">${escapeHTML(notice)}</p>`:''}`;
+    <p class="note">${orderMode==='random'?`LEVEL ${level} の50語から重複なしで10語を選びます。`:'範囲のボタンを押すと、その10語を順番に練習できます。'}</p></section>${notice?`<p class="toast">${escapeHTML(notice)}</p>`:''}`;
   notice='';
   app.querySelectorAll('[data-level]').forEach(el=>el.onclick=()=>{level=+el.dataset.level;render()});
   app.querySelectorAll('[data-block]').forEach(el=>el.onclick=()=>begin(false,+el.dataset.block));
+  app.querySelector('#random-start')?.addEventListener('click',()=>begin(false));
   app.querySelectorAll('[data-direction]').forEach(el=>el.onclick=()=>{direction=el.dataset.direction;render()});
   app.querySelectorAll('[data-order]').forEach(el=>el.onclick=()=>{orderMode=el.dataset.order;render()});
   app.querySelector('#review').onclick=()=>begin(true);
