@@ -6,4 +6,6 @@
 .ratings button:focus-visible{outline:3px solid #35738c;outline-offset:2px}
 .assessment{font-size:1.05rem;font-weight:750;color:#244d65;margin:0 0 14px}
 .hint-button{margin-top:12px;width:100%}
+.listlevels{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 8px}
+.listlevels .option{margin:0;min-width:94px}
 @media(max-width:720px){.card{min-height:215px}}
