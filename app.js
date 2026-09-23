@@ -1,5 +1,5 @@
 const app=document.querySelector('#app');
-let words=[],records={},db,view='home',level=1,limit=10,direction='ja-en',orderMode='sequential',cursors={},session=null,notice='',listLevel='1';
+let words=[],records={},db,view='home',level=1,direction='ja-en',orderMode='sequential',cursors={},session=null,notice='',listLevel='1';
 const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open('vocab-deck',1);req.onupgradeneeded=()=>{req.result.createObjectStore('progress',{keyPath:'id'});req.result.createObjectStore('meta')};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function transaction(store,mode,callback){return new Promise((resolve,reject)=>{const tx=db.transaction(store,mode);let value;try{value=callback(tx.objectStore(store))}catch(err){reject(err);return}tx.oncomplete=()=>resolve(value);tx.onerror=()=>reject(tx.error)})}
@@ -17,11 +17,10 @@ function pick(pool,n,mode,start=0){
   if(mode==='random')for(let i=chosen.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[chosen[i],chosen[j]]=[chosen[j],chosen[i]]}
   return chosen.slice(0,n).map(w=>w.id);
 }
-async function begin(review=false){
-  const pool=review?words.filter(w=>['unknown','unsure'].includes(status(w.id))):words.filter(w=>w.level===level);
+async function begin(review=false,block=0){
+  const pool=review?words.filter(w=>['unknown','unsure'].includes(status(w.id))):words.filter(w=>w.level===level).slice(block*10,(block+1)*10);
   if(!pool.length){notice='復習する単語がまだありません。';render();return}
-  const start=review?0:(cursors[level]||0)%pool.length;
-  session={ids:pick(pool,limit,orderMode,start),index:0,review,direction,order:orderMode,shown:false,hinted:false,assessed:null,results:[]};
+  session={ids:pick(pool,10,orderMode),index:0,review,direction,order:orderMode,shown:false,hinted:false,assessed:null,results:[]};
   await saveSession();setView('practice');
 }
 async function hint(){session.hinted=true;await saveSession();render()}
@@ -35,11 +34,6 @@ async function rate(choice){
   session.results.push(final);
   session.assessed=final;
   session.shown=true;
-  if(!session.review&&session.order==='sequential'){
-    const pool=words.filter(w=>w.level===getWord(id).level);
-    cursors[getWord(id).level]=(pool.findIndex(w=>w.id===id)+1)%pool.length;
-    await saveCursors();
-  }
   await saveSession();
   render();
 }
@@ -71,17 +65,15 @@ function renderHome(){
     <section class="panel"><h2 class="sectiontitle">LEVEL ${level} を学習</h2><p class="muted">答えを思い浮かべて、自分で理解度を選びます。</p>
     <div class="eyebrow">出題方向</div><div class="options"><button class="option ${direction==='ja-en'?'selected':''}" data-direction="ja-en">日本語 → 英語</button><button class="option ${direction==='en-ja'?'selected':''}" data-direction="en-ja">英語 → 日本語</button></div>
     <div class="eyebrow">出題順</div><div class="options"><button class="option ${orderMode==='sequential'?'selected':''}" data-order="sequential">順番に</button><button class="option ${orderMode==='random'?'selected':''}" data-order="random">ランダム</button></div>
-    <div class="eyebrow">1回の語数</div><div class="options"><button class="option ${limit===10?'selected':''}" data-limit="10">10語</button><button class="option ${limit===20?'selected':''}" data-limit="20">20語</button></div>
-    <div class="actions"><button class="primary" id="start">練習を始める</button><button class="secondary" id="review" ${weak?'':'disabled'}>苦手語を復習 ${weak?`(${weak})`:''}</button>${session&&session.index<session.ids.length?'<button class="ghost" id="resume">前回の続き</button>':''}</div>
-    <p class="note">「順番に」は前回評価した語の続きから出題します。苦手語だけの復習にも出題順が反映されます。</p></section>${notice?`<p class="toast">${escapeHTML(notice)}</p>`:''}`;
+    <div class="eyebrow">練習する範囲（各10語）</div><div class="options block-options">${Array.from({length:5},(_,i)=>{const set=words.filter(w=>w.level===level).slice(i*10,(i+1)*10);const done=set.filter(w=>status(w.id)!=='new').length;return `<button class="option block" data-block="${i}">${i*10+1}〜${(i+1)*10}語<small>${done} / 10語を学習済み</small></button>`}).join('')}</div>
+    <div class="actions"><button class="secondary" id="review" ${weak?'':'disabled'}>苦手語を復習 ${weak?`(${weak})`:''}</button></div>
+    <p class="note">範囲のボタンを押すと練習が始まります。「ランダム」は選んだ10語の中で順序を変えます。</p></section>${notice?`<p class="toast">${escapeHTML(notice)}</p>`:''}`;
   notice='';
   app.querySelectorAll('[data-level]').forEach(el=>el.onclick=()=>{level=+el.dataset.level;render()});
-  app.querySelectorAll('[data-limit]').forEach(el=>el.onclick=()=>{limit=+el.dataset.limit;render()});
+  app.querySelectorAll('[data-block]').forEach(el=>el.onclick=()=>begin(false,+el.dataset.block));
   app.querySelectorAll('[data-direction]').forEach(el=>el.onclick=()=>{direction=el.dataset.direction;render()});
   app.querySelectorAll('[data-order]').forEach(el=>el.onclick=()=>{orderMode=el.dataset.order;render()});
-  app.querySelector('#start').onclick=()=>begin(false);
   app.querySelector('#review').onclick=()=>begin(true);
-  if(app.querySelector('#resume'))app.querySelector('#resume').onclick=()=>setView('practice');
 }
 function renderPractice(){
   if(!session){setView('home');return}
