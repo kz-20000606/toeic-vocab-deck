@@ -99,9 +99,10 @@ function renderPractice(){
     <div class="progress"><span style="width:${session.index/session.ids.length*100}%"></span></div>
     <section class="panel"><div class="card"><div class="cardlabel">${japaneseFirst?'日本語から英語を思い出す':'英語の意味を思い出す'}</div>
     <div class="word ${japaneseFirst?'meaning':''}">${escapeHTML(japaneseFirst?w.meaning:w.word)}</div>
+    ${japaneseFirst&&session.hinted&&!session.shown?`<div class="hint" aria-live="polite">${mask}</div>`:''}
     ${session.shown?`<div class="cardlabel">答え</div><div class="word ${japaneseFirst?'':'meaning'}">${escapeHTML(japaneseFirst?w.word:w.meaning)}</div><p class="example">${escapeHTML(w.example)}</p>`:''}</div>
     <div class="answerbar">${session.shown?`<p class="assessment">${label(session.assessed)}として記録しました。</p><div class="actions">${session.assessed==='unknown'?'':'<button class="secondary" id="mistake">間違えてた</button>'}<button class="primary next-answer" id="next">次の単語へ</button></div>`:
-      `<div class="hint" aria-live="polite">${japaneseFirst&&session.hinted?mask:''}</div><div class="ratings"><button data-rate="known">わかる</button><button data-rate="unsure">あやふや</button><button data-rate="unknown">わからない</button></div>${japaneseFirst?'<button class="secondary hint-button" id="hint">最初の1文字を見る</button>':''}`}</div></section>
+      `<div class="ratings"><button data-rate="known">わかる</button><button data-rate="unsure">あやふや</button><button data-rate="unknown">わからない</button></div>${japaneseFirst?'<button class="secondary hint-button" id="hint">最初の1文字を見る</button>':''}`}</div></section>
     <p class="note">${session.shown?'答えが違っていた場合は「間違えてた」で苦手語に変更できます。':'ヒントを使っても評価は決まりません。3つの評価ボタンを押すと答えが表示されます。'}</p>
     <button class="ghost" id="exit" style="margin-top:20px">学習画面へ戻る</button>`;
   app.querySelector('#exit').onclick=()=>setView('home');
