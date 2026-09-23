@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132339">
+  <meta name="description" content="TOEIC向けのオリジナル単語を、自分のペースで復習する学習サイト。">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <title>Vocab Deck | 単語練習</title>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><div class="brand"><span class="brandmark">V</span><span>VOCAB DECK</span></div><span class="topnote">TOEIC 単語練習</span></header>
+    <main id="app" aria-live="polite"></main>
+    <nav class="bottomnav" aria-label="画面の切り替え">
+      <button type="button" data-view="home" class="active">学習</button>
+      <button type="button" data-view="list">単語一覧</button>
+      <button type="button" data-view="settings">記録・設定</button>
+    </nav>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>
