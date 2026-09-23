@@ -4,3 +4,6 @@
 .ratings button:first-child{background:#e6f1ed;border-color:#b8d9cb;color:#225d43}
 .ratings button:last-child{background:#fff0ed;border-color:#e2b8b2;color:#923f35}
 .ratings button:focus-visible{outline:3px solid #35738c;outline-offset:2px}
+.assessment{font-size:1.05rem;font-weight:750;color:#244d65;margin:0 0 14px}
+.hint-button{margin-top:12px;width:100%}
+@media(max-width:720px){.card{min-height:215px}}
