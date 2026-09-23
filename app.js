@@ -52,6 +52,16 @@ async function advance(){
   await saveSession();
   render();
 }
+async function markMistake(){
+  if(!session?.shown||!session.assessed||session.assessed==='unknown')return;
+  const id=session.ids[session.index];
+  records[id]={...records[id],status:'unknown',updatedAt:new Date().toISOString()};
+  await transaction('progress','readwrite',store=>store.put(records[id]));
+  session.assessed='unknown';
+  session.results[session.results.length-1]='unknown';
+  await saveSession();
+  render();
+}
 async function finish(){session=null;await saveSession();setView('home')}
 function renderHome(){
   const weak=words.filter(w=>['unknown','unsure'].includes(status(w.id))).length;
@@ -90,13 +100,14 @@ function renderPractice(){
     <section class="panel"><div class="card"><div class="cardlabel">${japaneseFirst?'日本語から英語を思い出す':'英語の意味を思い出す'}</div>
     <div class="word ${japaneseFirst?'meaning':''}">${escapeHTML(japaneseFirst?w.meaning:w.word)}</div>
     ${session.shown?`<div class="cardlabel">答え</div><div class="word ${japaneseFirst?'':'meaning'}">${escapeHTML(japaneseFirst?w.word:w.meaning)}</div><p class="example">${escapeHTML(w.example)}</p>`:''}</div>
-    <div class="answerbar">${session.shown?`<p class="assessment">${label(session.assessed)}として記録しました。</p><button class="primary next-answer" id="next">次の単語へ</button>`:
+    <div class="answerbar">${session.shown?`<p class="assessment">${label(session.assessed)}として記録しました。</p><div class="actions">${session.assessed==='unknown'?'':'<button class="secondary" id="mistake">間違えてた</button>'}<button class="primary next-answer" id="next">次の単語へ</button></div>`:
       `<div class="hint" aria-live="polite">${japaneseFirst&&session.hinted?mask:''}</div><div class="ratings"><button data-rate="known">わかる</button><button data-rate="unsure">あやふや</button><button data-rate="unknown">わからない</button></div>${japaneseFirst?'<button class="secondary hint-button" id="hint">最初の1文字を見る</button>':''}`}</div></section>
-    <p class="note">${session.shown?'評価のあとに答えを表示しています。':'ヒントを使っても評価は決まりません。3つの評価ボタンを押すと答えが表示されます。'}</p>
+    <p class="note">${session.shown?'答えが違っていた場合は「間違えてた」で苦手語に変更できます。':'ヒントを使っても評価は決まりません。3つの評価ボタンを押すと答えが表示されます。'}</p>
     <button class="ghost" id="exit" style="margin-top:20px">学習画面へ戻る</button>`;
   app.querySelector('#exit').onclick=()=>setView('home');
   app.querySelector('#hint')?.addEventListener('click',hint);
   app.querySelector('#next')?.addEventListener('click',advance);
+  app.querySelector('#mistake')?.addEventListener('click',markMistake);
   app.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>rate(b.dataset.rate));
 }
 function renderList(filter='',query=''){const displayed=words.filter(w=>(filter==='all'||+filter===w.level)&&(!query||w.word.toLowerCase().includes(query.toLowerCase())||w.meaning.includes(query)));app.innerHTML=`<div class="eyebrow">WORD LIST</div><h1 class="heading">単語一覧</h1><p class="muted">単語を検索して、意味や例文を確認できます。</p><div class="listtools"><select id="filter" class="input" style="max-width:170px" aria-label="レベルで絞り込み"><option value="all">全レベル</option>${Array.from({length:7},(_,i)=>`<option value="${i+1}" ${filter==i+1?'selected':''}>LEVEL ${i+1}</option>`).join('')}</select><input class="input" id="search" type="search" placeholder="単語・日本語で検索" value="${escapeHTML(query)}" aria-label="単語を検索"></div><p class="note">${displayed.length}語を表示</p><div class="wordlist">${displayed.map(w=>`<div class="wordrow"><strong>${escapeHTML(w.word)}</strong><p>${escapeHTML(w.meaning)}</p><small>LEVEL ${w.level} · ${label(status(w.id))}</small><p class="note">${escapeHTML(w.example)}</p></div>`).join('')}</div>`;app.querySelector('#filter').onchange=e=>renderList(e.target.value,app.querySelector('#search').value);app.querySelector('#search').oninput=e=>{const caret=e.target.selectionStart;renderList(app.querySelector('#filter').value,e.target.value);const input=app.querySelector('#search');input.focus();input.setSelectionRange(caret,caret)}}
