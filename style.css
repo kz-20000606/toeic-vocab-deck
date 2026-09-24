@@ -14,3 +14,17 @@
 .block-options .block small{display:block;margin-top:5px;color:#64758b;font-size:.75rem;font-weight:500}
 @media(max-width:720px){.block-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.card{min-height:215px}}
+.custom-form{margin:22px 0 12px}
+.custom-form label{display:block;font-weight:750;margin-bottom:9px}
+.custom-inline{display:flex;gap:9px;align-items:stretch;flex-wrap:wrap}
+.custom-inline .input{flex:1 1 190px;width:auto;min-width:0;font-size:1rem}
+.custom-inline button{white-space:nowrap}
+.bulk-details{margin-top:24px}
+.bulk-details summary{cursor:pointer;font-weight:750;color:#31516b}
+.bulk-details textarea{display:block;font-size:1rem;margin:14px 0 10px;line-height:1.6;resize:vertical}
+.delete-button{margin-top:12px;color:#923f35}
+.row-actions{display:flex;gap:8px;margin-top:12px}
+.row-actions button{min-height:36px;padding:6px 12px;font-size:.85rem}
+.edit-form{display:grid;gap:8px}
+.edit-form .input{font-size:1rem}
+@media(max-width:720px){.bottomnav{gap:2px;padding-left:6px;padding-right:6px}.bottomnav button{font-size:.76rem;padding:10px 2px}}
