@@ -28,3 +28,16 @@
 .edit-form{display:grid;gap:8px}
 .edit-form .input{font-size:1rem}
 @media(max-width:720px){.bottomnav{gap:2px;padding-left:6px;padding-right:6px}.bottomnav button{font-size:.76rem;padding:10px 2px}}
+.save-control{margin-top:14px;max-width:450px}
+.save-actions{display:flex;gap:6px;align-items:center}
+.save-actions .secondary{min-height:40px;padding:8px 13px;font-size:.88rem}
+.save-actions .ghost{min-height:40px;padding:8px 12px;font-size:.88rem}
+.save-destination{display:block;color:#607388;margin-top:4px}
+.save-feedback{display:block;color:#226747;font-size:.86rem;margin-top:5px}
+.save-menu{margin-top:8px;padding:13px;border:1px solid #d5e0e9;border-radius:12px;background:#f7fafc;display:flex;gap:8px;flex-wrap:wrap}
+.save-menu[hidden]{display:none}
+.save-menu p{width:100%;margin:0;font-size:.86rem;color:#52657b;font-weight:700}
+.save-menu .ghost{min-height:36px;padding:6px 10px;font-size:.85rem;background:white}
+.save-new-list{display:flex;gap:6px;width:100%;flex-wrap:wrap}
+.save-new-list .input{font-size:.9rem;padding:8px;min-width:135px;flex:1;width:auto}
+.save-new-list .secondary{min-height:36px;padding:6px 11px;font-size:.85rem}
